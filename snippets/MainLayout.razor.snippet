@@ -1,3 +1,8 @@
-@Body
+@inherits LayoutComponentBase
 
-<JsonLdScript />
+<SectionContent SectionName="HeadLayout">
+	@* … the layout's existing links and scripts … *@
+	<JsonLdScript />
+</SectionContent>
+
+@Body
