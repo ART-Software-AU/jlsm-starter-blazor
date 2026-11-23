@@ -12,11 +12,13 @@ SitecoreAI Blazor SDK. Follow the steps in order and change nothing else.
    - Otherwise add `<SectionContent SectionName="HeadLayout"> <JsonLdScript /> </SectionContent>`.
    - If `App.razor` has no outlet in `<head>`, add `<SectionOutlet SectionName="HeadLayout" />` there.
 3. In the rendering host's project, run `dotnet add package JLSM.JsonLd.Blazor`, or add
-   `<PackageReference Include="JLSM.JsonLd.Blazor" Version="1.0.0" />` to its project file.
+   `<PackageReference Include="JLSM.JsonLd.Blazor" Version="1.1.0" />` to its project file. The package is
+   not on nuget.org yet: if restore cannot find it, stop and tell the user to get the package source from
+   PING Works.
 4. In its `Program.cs`, add `builder.Services.AddJsonLd();` beside the other service registrations, with
    `using JLSM.JsonLd;`.
 5. In its `_Imports.razor`, add `@using JLSM.JsonLd`.
-6. Add no component mapping, Sitecore items, package source or settings, unless the SDK's
+6. Add no component mapping, Sitecore items, other package source or settings, unless the SDK's
    `SitecoreSettings:EdgeContextId` is empty. In that case, set `JsonLd:Head:ContextId`. JLSM's Plugin Setup
    creates the rendering and the placeholder. Do not rename the `JSON-LD` rendering or its component name.
 7. Build the host. Then fetch a published page that carries a JLSM graph and confirm its HTML has exactly one

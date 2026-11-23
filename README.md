@@ -9,20 +9,26 @@ that placeholder. The `JSON-LD` component in the `JLSM.JsonLd.Blazor` package bi
 and fills its document in, and the `JsonLdScript` component writes every document on the page as one
 `<script type="application/ld+json">` in the **head**, server-side, in the raw HTML.
 
-The Blazor SDK differs from the Content SDK heads in `sitecore-xmcloud-starter-js`: the renderer is a NuGet
+The Blazor SDK differs from the Content SDK heads in Sitecore's
+[`xmcloud-starter-js`](https://github.com/Sitecore/xmcloud-starter-js): the renderer is a NuGet
 package rather than copied files, and components register themselves by attribute, so there is no component
 map to edit.
 
 ## What is in this repository
 
-`snippets/` holds the edits a host needs. `JLSM.JsonLd.Blazor` comes from nuget.org, with the
-`JLSM.JsonLd.Core` engine bundled inside it.
+`snippets/` holds the edits a host needs. `JLSM.JsonLd.Blazor` bundles the `JLSM.JsonLd.Core` engine inside
+it.
+
+> **The package is not on nuget.org yet.** It depends on `PINGWorks.SitecoreAI.BlazorSDK`, which is not
+> published there either, so it will be released once the SDK is. Until then, ask PING Works for access to
+> the package.
 
 ## 1. Add the placeholder and the script
 
 Render a placeholder with the key `jlsm-jsonld` in every page template (the Razor components that inherit
-`SitecoreTemplate`), before the header (`snippets/PageTemplate.razor.snippet`). The key is set in JLSM
-Settings on the dashboard; if you change it there, use the same key here.
+`SitecoreTemplate`), before the header (`snippets/PageTemplate.razor.snippet`). The key is chosen when JLSM
+is set up, `jlsm-jsonld` unless you chose another, and JLSM's Developer screen shows it and can change it.
+Use the same key here, and change it here too if you change it there.
 
 ```razor
 <ScPlaceholder Name="jlsm-jsonld" />
@@ -57,7 +63,8 @@ in `<head>` (`snippets/MainLayout.razor.snippet`):
 
 ## 2. Add the package
 
-1. Add the package to the rendering host (`snippets/YourHeadProject.csproj.snippet`):
+1. Add the package to the rendering host (`snippets/YourHeadProject.csproj.snippet`), from the package source
+   PING Works gives you until it is on nuget.org:
 
    ```
    dotnet add package JLSM.JsonLd.Blazor
@@ -85,11 +92,11 @@ JLSM's Plugin Setup already creates and registers everything Sitecore needs. The
 | Item | Path |
 |---|---|
 | The `JSON-LD` rendering (Json Rendering, component name `JSON-LD`) | `/sitecore/layout/Renderings/Feature/JSON-LD/JSON-LD` |
-| The placeholder settings for `jlsm-jsonld`, allowing only the `JSON-LD` rendering | `/sitecore/layout/Placeholder Settings/Feature/JSON-LD/JSON-LD` |
-| `jlsm-jsonld` in the Headless Layout's Layout Service Placeholders, so every page returns it | `/sitecore/layout/Layouts/Foundation/JSS Experience Accelerator/Presentation/JSS Layout` |
+| The placeholder settings for the key, allowing only the `JSON-LD` rendering | `/sitecore/layout/Placeholder Settings/Feature/JSON-LD/JSON-LD`, or `…/Feature/JSON-LD/<your key>` for a key other than `jlsm-jsonld` |
+| The key in the Headless Layout's Layout Service Placeholders, so every page returns it | `/sitecore/layout/Layouts/Foundation/JSS Experience Accelerator/Presentation/JSS Layout` |
 
 Publish the layout and the placeholder settings folder after Plugin Setup runs. On a tenant without the
-Headless Layout, Plugin Setup asks you to add `jlsm-jsonld` to your own layout's placeholders.
+Headless Layout, Plugin Setup asks you to add the key to your own layout's placeholders.
 
 > **Do not rename the rendering or change its Component Name.** The package binds to the name `JSON-LD`.
 > Under any other name the rendering has no component and the page emits no JSON-LD.
@@ -123,6 +130,11 @@ pages that carry JSON-LD.
 This package reads contract **2**: the datasource carries `jsonTemplate`, `references`, `jlsmSiteRoot`,
 `jlsmDefaultLanguage` and `jlsmContract`. A datasource on another contract is logged once at warning level
 and emits nothing. Upgrade the app, republish every graph, then upgrade the package.
+
+A list that repeats over the items a page field selects, such as an Article's `about` bound to its tags,
+also needs the datasource's `jlsmRepeats` field, which a graph carries only when it has such a list. These
+lists kept contract 2, so `JLSM.JsonLd.Blazor` 1.0.0 does not warn: it leaves those properties out of the
+page. Use 1.1.0 or later.
 
 ## Checking it
 
