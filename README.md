@@ -63,14 +63,22 @@ in `<head>` (`snippets/MainLayout.razor.snippet`):
 
 ## 2. Add the package
 
-1. Add the package to the rendering host (`snippets/YourHeadProject.csproj.snippet`), from the package source
-   PING Works gives you until it is on nuget.org:
+1. Let restore find the package on the PING Works feed. It is the feed your host already restores
+   `PINGWorks.SitecoreAI.BlazorSDK` from, with the same access token, so it needs no new source. If your
+   `nuget.config` has a `packageSourceMapping`, add `<package pattern="JLSM.*" />` to that feed's
+   `packageSource`, beside `PINGWorks.*` (`snippets/nuget.config.snippet`; your key may be named other than
+   `VSTS`). Without it, restore looks for the package only on nuget.org and fails with NU1101.
+
+2. Add the package to the rendering host (`snippets/YourHeadProject.csproj.snippet`):
 
    ```
    dotnet add package JLSM.JsonLd.Blazor
    ```
 
-2. Register it in `Program.cs` (`snippets/Program.cs.snippet`):
+   It needs `PINGWorks.SitecoreAI.BlazorSDK` 1.15.0 or later; a host on an older SDK fails restore with
+   NU1605 until it moves up.
+
+3. Register it in `Program.cs` (`snippets/Program.cs.snippet`):
 
    ```csharp
    using JLSM.JsonLd;
@@ -78,7 +86,7 @@ in `<head>` (`snippets/MainLayout.razor.snippet`):
    builder.Services.AddJsonLd();
    ```
 
-3. Add `@using JLSM.JsonLd` to `_Imports.razor` (`snippets/_Imports.razor.snippet`).
+4. Add `@using JLSM.JsonLd` to `_Imports.razor` (`snippets/_Imports.razor.snippet`).
 
 ## 3. No component map
 
@@ -127,14 +135,23 @@ pages that carry JSON-LD.
 
 ## Contract
 
-This package reads contract **2**: the datasource carries `jsonTemplate`, `references`, `jlsmSiteRoot`,
-`jlsmDefaultLanguage` and `jlsmContract`. A datasource on another contract is logged once at warning level
+This package reads contracts **2** and **3**. A graph for pages is on contract 2: the datasource carries
+`jsonTemplate`, `references`, `jlsmSiteRoot`, `jlsmDefaultLanguage` and `jlsmContract`. A graph that describes
+a component is on contract 3 and also carries `jlsmComponent`; it publishes only on pages that place that
+component, once or once per placement. A datasource on any other contract is logged once at warning level
 and emits nothing. Upgrade the app, republish every graph, then upgrade the package.
 
-A list that repeats over the items a page field selects, such as an Article's `about` bound to its tags,
-also needs the datasource's `jlsmRepeats` field, which a graph carries only when it has such a list. These
-lists kept contract 2, so `JLSM.JsonLd.Blazor` 1.0.0 does not warn: it leaves those properties out of the
-page. Use 1.1.0 or later.
+Some features kept contract 2, so an older package does not warn: it leaves the property out, or publishes it
+as before. If any of these is missing from your page, use 1.3.0 or later.
+
+- A list that repeats over the items a page field selects, such as an Article's `about` bound to its tags, or
+  over the items of a component on the page. It needs the datasource's `jlsmRepeats` field, which a graph
+  carries only when it has such a list. 1.0.0 leaves these lists out.
+- A page field bound to a Number, Boolean, Date or Duration property. An older package leaves every such
+  property out.
+- An entry of a repeated list whose required value is empty. 1.3.0 leaves the entry out; an older package
+  publishes it without that value.
+- A graph that describes a component. An older package does not know contract 3 and publishes nothing for it.
 
 ## Checking it
 
